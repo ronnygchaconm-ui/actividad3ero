@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Interactivo de Almacenamiento - U.E. Colegio Divina Misericordia</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.9);
+      --accent-blue: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-green: #22c55e;
+      --accent-red: #ef4444;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top center, #1e1b4b, #0f172a, #020617);
+      color: var(--text-light);
+      height: 100vh;
+      max-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1.2rem;
+      overflow: hidden;
+    }
+
+    header {
+      text-align: center;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      color: #000;
+      font-weight: 800;
+      padding: 0.2rem 1.2rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      font-weight: 900;
+      background: linear-gradient(to right, #ffffff, #93c5fd, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-top: 0.1rem;
+    }
+
+    .docente-tag {
+      font-size: 1.15rem;
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+
+    .progress-tracker {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #facc15;
+      margin-top: 0.3rem;
+      background: rgba(250, 204, 21, 0.1);
+      display: inline-block;
+      padding: 0.2rem 1rem;
+      border-radius: 20px;
+      border: 1px solid rgba(250, 204, 21, 0.3);
+    }
+
+    main {
+      width: 100%;
+      max-width: 1000px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* ESCENA DADO */
+    .dice-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+    }
+
+    .scene {
+      width: 110px;
+      height: 110px;
+      perspective: 500px;
+    }
+
+    .cube {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1.2s ease-out;
+    }
+
+    .cube-face {
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      background: linear-gradient(135deg, #ffffff, #e2e8f0);
+      border: 2px solid #cbd5e1;
+      border-radius: 16px;
+      display: grid;
+      grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+      padding: 10px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 0 20px rgba(56, 189, 248, 0.3);
+    }
+
+    .dot {
+      background-color: #0f172a;
+      border-radius: 50%;
+      align-self: center;
+      justify-self: center;
+      width: 18px;
+      height: 18px;
+    }
+
+    .cube-face.red .dot { background-color: #dc2626; }
+
+    .face-1 { transform: rotateY(0deg) translateZ(55px); }
+    .face-2 { transform: rotateY(90deg) translateZ(55px); }
+    .face-3 { transform: rotateY(180deg) translateZ(55px); }
+    .face-4 { transform: rotateY(-90deg) translateZ(55px); }
+    .face-5 { transform: rotateX(90deg) translateZ(55px); }
+    .face-6 { transform: rotateX(-90deg) translateZ(55px); }
+
+    .f1 .d1 { grid-area: 2/2; }
+    .f2 .d1 { grid-area: 1/1; } .f2 .d2 { grid-area: 3/3; }
+    .f3 .d1 { grid-area: 1/1; } .f3 .d2 { grid-area: 2/2; } .f3 .d3 { grid-area: 3/3; }
+    .f4 .d1 { grid-area: 1/1; } .f4 .d2 { grid-area: 1/3; } .f4 .d3 { grid-area: 3/1; } .f4 .d4 { grid-area: 3/3; }
+    .f5 .d1 { grid-area: 1/1; } .f5 .d2 { grid-area: 1/3; } .f5 .d3 { grid-area: 2/2; } .f5 .d4 { grid-area: 3/1; } .f5 .d5 { grid-area: 3/3; }
+    .f6 .d1 { grid-area: 1/1; } .f6 .d2 { grid-area: 1/3; } .f6 .d3 { grid-area: 2/1; } .f6 .d4 { grid-area: 2/3; } .f6 .d5 { grid-area: 3/1; } .f6 .d6 { grid-area: 3/3; }
+
+    .btn-roll {
+      padding: 0.9rem 2.5rem;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-roll:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    /* CARD DE PREGUNTA */
+    .exercise-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 1.2rem 1.8rem;
+      width: 100%;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .exercise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.4rem;
+    }
+
+    .exercise-num {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 0.2rem 0.8rem;
+      border-radius: 8px;
+    }
+
+    .exercise-title {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .statement {
+      font-size: 1.7rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: #fff;
+      margin-bottom: 0.8rem;
+      text-align: center;
+    }
+
+    .operators-label {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 0.4rem;
+    }
+
+    .operators-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .operator-btn {
+      width: 58px;
+      height: 58px;
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #1e293b, #334155);
+      border: 2px solid var(--accent-purple);
+      color: var(--accent-purple);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      user-select: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+
+    .operator-btn:hover {
+      transform: translateY(-2px);
+      background: var(--accent-purple);
+      color: #fff;
+    }
+
+    .operator-btn:active {
+      cursor: grabbing;
+    }
+
+    .math-workspace {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 1rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 0.8rem;
+    }
+
+    /* QUITAMOS SPINNERS (FLECHITAS) */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .math-input {
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-align: center;
+      padding: 0.5rem;
+      background: rgba(30, 41, 59, 0.95);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .math-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+
+    .input-val1, .input-val2 { width: 170px; color: var(--accent-blue); }
+    .input-result { width: 190px; color: #4ade80; }
+
+    .drop-zone {
+      width: 65px;
+      height: 65px;
+      border: 3px dashed var(--accent-purple);
+      background: rgba(168, 85, 247, 0.1);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--accent-purple);
+      transition: all 0.2s ease;
+    }
+
+    .drop-zone.hovered {
+      background: rgba(168, 85, 247, 0.3);
+      transform: scale(1.05);
+    }
+
+    .drop-zone.filled {
+      border-style: solid;
+      background: rgba(168, 85, 247, 0.25);
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+    }
+
+    .symbol-equal {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+
+    .unit-tag {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #e2e8f0;
+    }
+
+    .btn-verify {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(34, 197, 94, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-verify:hover {
+      transform: translateY(-1px);
+    }
+
+    .feedback-box {
+      margin-top: 0.6rem;
+      padding: 0.6rem;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-align: center;
+      display: none;
+    }
+
+    .feedback-box.correct {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--accent-green);
+      color: #4ade80;
+    }
+
+    .feedback-box.incorrect {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--accent-red);
+      color: #f87171;
+    }
+
+    .solution-text {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-light);
+      margin-top: 0.3rem;
+      text-align: left;
+      line-height: 1.3;
+      background: rgba(0,0,0,0.3);
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+
+    .btn-next {
+      margin-top: 0.6rem;
+      padding: 0.6rem 1.8rem;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #38bdf8, #2563eb);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      display: none;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* PANTALLA FINAL */
+    .finish-screen {
+      text-align: center;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 2.5rem;
+      display: none;
+    }
+
+    .finish-screen h2 {
+      font-size: 2.5rem;
+      color: var(--accent-blue);
+      margin-bottom: 1rem;
+    }
+
+    .finish-screen p {
+      font-size: 1.5rem;
+      color: var(--text-light);
+      margin-bottom: 2rem;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <header>
+    <div class="header-badge">U.E. Colegio Divina Misericordia</div>
+    <h1>Desafío de Almacenamiento Digital</h1>
+    <div class="docente-tag">Docente: Lcda. Ronny Chacón</div>
+    <div class="progress-tracker" id="progressTracker">Progreso: 0 de 6 completados</div>
+  </header>
+
+  <main>
+    <!-- ESCENA DADO -->
+    <div class="dice-stage" id="diceStage">
+      <div class="scene">
+        <div class="cube" id="cube">
+          <div class="cube-face face-1 f1"><div class="dot d1"></div></div>
+          <div class="cube-face face-2 f2 red"><div class="dot d1"></div><div class="dot d2"></div></div>
+          <div class="cube-face face-3 f3"><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div></div>
+          <div class="cube-face face-4 f4"><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div><div class="dot d4"></div></div>
+          <div class="cube-face face-5 f5"><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div><div class="dot d4"></div><div class="dot d5"></div></div>
+          <div class="cube-face face-6 f6 red"><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div><div class="dot d4"></div><div class="dot d5"></div><div class="dot d6"></div></div>
+        </div>
+      </div>
+      <button class="btn-roll" id="rollBtn" onclick="rollDice()">
+        🎲 Lanzar Dado
+      </button>
+    </div>
+
+    <!-- TARJETA PREGUNTA -->
+    <div class="exercise-card" id="exerciseCard">
+      <div class="exercise-header">
+        <span class="exercise-num" id="exNum">Ejercicio #1</span>
+        <span class="exercise-title" id="exTitle">Conversión de 1 Escalón</span>
+      </div>
+
+      <div class="statement" id="exStatement">
+        Cargando enunciado...
+      </div>
+
+      <div class="operators-label">Arrastra o toca el operador (× o ÷) hacia la casilla:</div>
+      <div class="operators-container">
+        <div class="operator-btn" draggable="true" id="opMult" data-op="×">×</div>
+        <div class="operator-btn" draggable="true" id="opDiv" data-op="÷">÷</div>
+      </div>
+
+      <div class="math-workspace">
+        <input type="number" class="math-input input-val1" id="inputVal1" placeholder="Número 1" autocomplete="off">
+        <div class="drop-zone" id="dropZone">?</div>
+        <input type="number" class="math-input input-val2" id="inputVal2" placeholder="Número 2" autocomplete="off">
+        <span class="symbol-equal">=</span>
+        <input type="number" class="math-input input-result" id="inputResult" placeholder="Resultado" autocomplete="off">
+        <span class="unit-tag" id="targetUnit">MB</span>
+      </div>
+
+      <button class="btn-verify" onclick="checkAnswer()">Verificar Respuesta</button>
+
+      <div class="feedback-box" id="feedbackBox"></div>
+      <button class="btn-next" id="nextBtn" onclick="resetToDice()">🎲 Siguiente Ejercicio</button>
+    </div>
+
+    <!-- PANTALLA DE COMPLETA -->
+    <div class="finish-screen" id="finishScreen">
+      <h2>🏆 ¡FELICITACIONES! 🏆</h2>
+      <p>Han completado exitosamente los 6 ejercicios de conversión de almacenamiento digital.</p>
+      <button class="btn-roll" onclick="restartQuiz()">🔄 Reiniciar Juego</button>
+    </div>
+  </main>
+
+  <footer>
+    Actividad Interactiva de Informática • Formato Pantalla Completa TV
+  </footer>
+
+  <script>
+    const exercises = [
+      {
+        id: 1,
+        title: "De Gigabytes (GB) a Megabytes (MB)",
+        statement: "Un pendrive tiene una capacidad de 4 GB. ¿A cuántos Megabytes (MB) equivale ese almacenamiento?",
+        val1: 4,
+        val2: 1024,
+        op: "×",
+        result: 4096,
+        unit: "MB",
+        steps: "Al bajar 1 escalón (GB a MB) debes MULTIPLICAR por 1024.<br><b>Operación:</b> 4 × 1024 = 4096 MB"
+      },
+      {
+        id: 2,
+        title: "De Terabytes (TB) a Gigabytes (GB)",
+        statement: "Compraste un disco duro externo de 2 TB. ¿A cuántos Gigabytes (GB) equivale?",
+        val1: 2,
+        val2: 1024,
+        op: "×",
+        result: 2048,
+        unit: "GB",
+        steps: "Al bajar 1 escalón (TB a GB) debes MULTIPLICAR por 1024.<br><b>Operación:</b> 2 × 1024 = 2048 GB"
+      },
+      {
+        id: 3,
+        title: "De Megabytes (MB) a Gigabytes (GB)",
+        statement: "Tienes una carpeta de fotos que ocupa 3072 MB. ¿Cuántos Gigabytes (GB) representa?",
+        val1: 3072,
+        val2: 1024,
+        op: "÷",
+        result: 3,
+        unit: "GB",
+        steps: "Al subir 1 escalón (MB a GB) debes DIVIDIR entre 1024.<br><b>Operación:</b> 3072 ÷ 1024 = 3 GB"
+      },
+      {
+        id: 4,
+        title: "De Kilobytes (KB) a Megabytes (MB)",
+        statement: "Un documento en PDF pesa 5120 KB. ¿Cuántos Megabytes (MB) son?",
+        val1: 5120,
+        val2: 1024,
+        op: "÷",
+        result: 5,
+        unit: "MB",
+        steps: "Al subir 1 escalón (KB a MB) debes DIVIDIR entre 1024.<br><b>Operación:</b> 5120 ÷ 1024 = 5 MB"
+      },
+      {
+        id: 5,
+        title: "De Terabytes (TB) a Megabytes (MB)",
+        statement: "Un disco duro SSD de 3 TB está lleno de vídeos. ¿Cuántos Megabytes (MB) representa esa capacidad?",
+        val1: 3,
+        val2: 1048576,
+        op: "×",
+        result: 3145728,
+        unit: "MB",
+        steps: "Al bajar 2 escalones (TB a MB) debes MULTIPLICAR dos veces por 1024 (1024 × 1024 = 1.048.576).<br><b>Operación:</b> 3 × 1.048.576 = 3.145.728 MB"
+      },
+      {
+        id: 6,
+        title: "De Kilobytes (KB) a Gigabytes (GB)",
+        statement: "Una aplicación móvil ha acumulado 8.388.608 KB en archivos temporales. ¿A cuántos Gigabytes (GB) equivale?",
+        val1: 8388608,
+        val2: 1048576,
+        op: "÷",
+        result: 8,
+        unit: "GB",
+        steps: "Al subir 2 escalones (KB a GB) debes DIVIDIR dos veces entre 1024 (1024 × 1024 = 1.048.576).<br><b>Operación:</b> 8.388.608 ÷ 1.048.576 = 8 GB"
+      }
+    ];
+
+    let remainingExercises = [...exercises];
+    let completedCount = 0;
+    let currentExercise = null;
+    let selectedOperator = null;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSuspenseSound() {
+      initAudio();
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(100, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + 1.2);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.linearRampToValueAtTime(0.01, now + 1.2);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 1.2);
+    }
+
+    function playSuccessSound() {
+      initAudio();
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(freq, now + i * 0.1);
+        gain.gain.setValueAtTime(0.2, now + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + i * 0.1);
+        osc.stop(now + i * 0.1 + 0.3);
+      });
+    }
+
+    function playErrorSound() {
+      initAudio();
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.setValueAtTime(110, now + 0.2);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    }
+
+    function rollDice() {
+      if (remainingExercises.length === 0) {
+        showFinishScreen();
+        return;
+      }
+
+      initAudio();
+      playSuspenseSound();
+
+      const cube = document.getElementById('cube');
+      const rollBtn = document.getElementById('rollBtn');
+      rollBtn.disabled = true;
+
+      // Seleccionar un ejercicio restante de manera aleatoria
+      const randomIndex = Math.floor(Math.random() * remainingExercises.length);
+      currentExercise = remainingExercises[randomIndex];
+
+      // Eliminar el ejercicio seleccionado para que no vuelva a salir
+      remainingExercises.splice(randomIndex, 1);
+
+      const rolledNumber = currentExercise.id;
+
+      const rotations = {
+        1: { x: 0, y: 0 },
+        2: { x: 0, y: -90 },
+        3: { x: 0, y: -180 },
+        4: { x: 0, y: 90 },
+        5: { x: -90, y: 0 },
+        6: { x: 90, y: 0 }
+      };
+
+      const targetRot = rotations[rolledNumber];
+      cube.style.transform = `rotateX(${targetRot.x + 1080}deg) rotateY(${targetRot.y + 1080}deg)`;
+
+      setTimeout(() => {
+        displayExercise();
+        rollBtn.disabled = false;
+      }, 1200);
+    }
+
+    function displayExercise() {
+      document.getElementById('diceStage').style.display = 'none';
+      const card = document.getElementById('exerciseCard');
+      card.style.display = 'block';
+
+      document.getElementById('exNum').innerText = `Ejercicio #${currentExercise.id}`;
+      document.getElementById('exTitle').innerText = currentExercise.title;
+      document.getElementById('exStatement').innerText = currentExercise.statement;
+      document.getElementById('targetUnit').innerText = currentExercise.unit;
+
+      document.getElementById('inputVal1').value = '';
+      document.getElementById('inputVal2').value = '';
+      document.getElementById('inputResult').value = '';
+
+      const dropZone = document.getElementById('dropZone');
+      dropZone.innerText = '?';
+      dropZone.classList.remove('filled');
+      selectedOperator = null;
+
+      document.getElementById('feedbackBox').style.display = 'none';
+      document.getElementById('nextBtn').style.display = 'none';
+    }
+
+    function resetToDice() {
+      if (completedCount === exercises.length) {
+        showFinishScreen();
+        return;
+      }
+
+      document.getElementById('exerciseCard').style.display = 'none';
+      document.getElementById('diceStage').style.display = 'flex';
+      document.getElementById('cube').style.transform = 'rotateX(0deg) rotateY(0deg)';
+    }
+
+    // DRAG AND DROP
+    const dropZone = document.getElementById('dropZone');
+    const opBtns = document.querySelectorAll('.operator-btn');
+
+    opBtns.forEach(btn => {
+      btn.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', btn.dataset.op);
+      });
+      btn.addEventListener('click', () => {
+        setOperator(btn.dataset.op);
+      });
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('hovered');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('hovered');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('hovered');
+      const op = e.dataTransfer.getData('text/plain');
+      if (op) {
+        setOperator(op);
+      }
+    });
+
+    function setOperator(op) {
+      selectedOperator = op;
+      dropZone.innerText = op;
+      dropZone.classList.add('filled');
+    }
+
+    function checkAnswer() {
+      const v1 = parseFloat(document.getElementById('inputVal1').value);
+      const v2 = parseFloat(document.getElementById('inputVal2').value);
+      const userRes = parseFloat(document.getElementById('inputResult').value);
+
+      if (isNaN(v1) || !selectedOperator || isNaN(v2) || isNaN(userRes)) {
+        alert("Por favor, completa los dos números, coloca el signo (× o ÷) y escribe el resultado.");
+        return;
+      }
+
+      const isV1Correct = (v1 === currentExercise.val1);
+      const isOpCorrect = (selectedOperator === currentExercise.op);
+      const isV2Correct = (v2 === currentExercise.val2);
+      const isResCorrect = (Math.abs(userRes - currentExercise.result) < 0.01);
+
+      const feedbackBox = document.getElementById('feedbackBox');
+      feedbackBox.style.display = 'block';
+
+      if (isV1Correct && isOpCorrect && isV2Correct && isResCorrect) {
+        playSuccessSound();
+        triggerConfetti();
+        feedbackBox.className = "feedback-box correct";
+        feedbackBox.innerHTML = `
+          🎉 ¡EXCELENTE TRABAJO! 🎉<br>
+          ¡Completaste los valores, la operación y el resultado correctamente!
+        `;
+
+        completedCount++;
+        document.getElementById('progressTracker').innerText = `Progreso: ${completedCount} de 6 completados`;
+      } else {
+        playErrorSound();
+        feedbackBox.className = "feedback-box incorrect";
+        feedbackBox.innerHTML = `
+          ❌ ¡Casi lo logras! Revisemos el planteamiento:<br>
+          <div class="solution-text">
+            ${currentExercise.steps}
+          </div>
+        `;
+      }
+
+      document.getElementById('nextBtn').style.display = 'block';
+    }
+
+    function showFinishScreen() {
+      document.getElementById('diceStage').style.display = 'none';
+      document.getElementById('exerciseCard').style.display = 'none';
+      document.getElementById('finishScreen').style.display = 'block';
+      triggerConfetti();
+      playSuccessSound();
+    }
+
+    function restartQuiz() {
+      remainingExercises = [...exercises];
+      completedCount = 0;
+      document.getElementById('progressTracker').innerText = `Progreso: 0 de 6 completados`;
+      document.getElementById('finishScreen').style.display = 'none';
+      document.getElementById('diceStage').style.display = 'flex';
+      document.getElementById('cube').style.transform = 'rotateX(0deg) rotateY(0deg)';
+    }
+
+    function triggerConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#38bdf8', '#a855f7', '#22c55e', '#facc15', '#ec4899'];
+
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 16,
+          vy: (Math.random() - 0.7) * 16,
+          size: Math.random() * 8 + 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          spin: (Math.random() - 0.5) * 10
+        });
+      }
+
+      let frame = 0;
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.4;
+          p.rotation += p.spin;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        });
+
+        frame++;
+        if (frame < 90) {
+          requestAnimationFrame(render);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      render();
+    }
+  </script>
+</body>
+</html>
